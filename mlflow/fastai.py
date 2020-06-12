@@ -29,6 +29,7 @@ from mlflow.models.utils import _save_example
 from mlflow.tracking.artifact_utils import _download_artifact_from_uri
 from mlflow.utils.environment import _mlflow_conda_env
 from mlflow.utils.model_utils import _get_flavor_configuration
+from mlflow.utils.annotations import experimental
 
 from fastai.tabular import TabularList
 from fastai.basic_data import DatasetType
@@ -248,7 +249,7 @@ def load_model(model_uri):
     flavor_conf = _get_flavor_configuration(model_path=local_model_path, flavor_name=FLAVOR_NAME)
     model_file_path = os.path.join(local_model_path, flavor_conf.get("data", "model.fastai"))
     return _load_model(path=model_file_path)
-
+@experimental
 def autolog():
     """
     Enable automatic logging from Fastai to MLflow.

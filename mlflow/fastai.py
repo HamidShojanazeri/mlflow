@@ -247,6 +247,8 @@ def load_model(model_uri):
     flavor_conf = _get_flavor_configuration(model_path=local_model_path, flavor_name=FLAVOR_NAME)
     model_file_path = os.path.join(local_model_path, flavor_conf.get("data", "model.fastai"))
     return _load_model(path=model_file_path)
+
+
 @experimental
 def autolog():
     """
@@ -254,6 +256,7 @@ def autolog():
     Logs loss and any other metrics specified in the fit
     function, and optimizer data as parameters. Model checkpoints
     are logged as artifacts to a 'models' directory.
+    
     MLflow will also log the parameters of the EarlyStopping and OneCycleScheduler callbacks
     """
     from fastai.basic_train import LearnerCallback, Learner

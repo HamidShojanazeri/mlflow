@@ -3,17 +3,13 @@ from __future__ import print_function
 import torch
 import numpy as np
 import pandas as pd
-# from tqdm import tqdm
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-import gc
 import re
-# tqdm.pandas()
 from fastprogress.fastprogress import master_bar, progress_bar
 from pathlib import Path
 from utils import *
 import argparse
-
 import mlflow
 import mlflow.pytorch
 import os
@@ -22,9 +18,7 @@ import tempfile
 import torch.nn.functional as F
 from torch.autograd import Variable
 # from tensorboardX import SummaryWriter
-from collections import namedtuple
 import matplotlib.pyplot as plt
-# %matplotlib inline
 from functools import partial
 from mlflow.utils.autologging_utils import try_mlflow_log, log_fn_args_as_params
 
@@ -112,9 +106,9 @@ class autolog():
             self('begin_fit')
             for epoch in range(epochs):
                 self.epoch = epoch
-                if not self('begin_epoch'): self.all_batches(self.data.train_dl)
+                if not self('begin_epoch'): self.all_batches(self.data["train_data"])
                 with torch.no_grad():
-                    if not self('begin_validate'): self.all_batches(self.data.valid_dl)
+                    if not self('begin_validate'): self.all_batches(self.data["valid_data"])
                 self('after_epoch')
         except CancelTrainException: self('after_cancel_train')
         finally:
@@ -129,17 +123,9 @@ class Learner():
     def __init__(self, model, opt, loss_func, data):
         self.model, self.opt, self.loss_func,self.data = model, opt, loss_func, data
 
-class DataBunch():
-    def __init__(self, train_dl, valid_dl):
-        self.train_dl, self.valid_dl = train_dl, valid_dl
-    @property
-    def train_ds(self): return self.train_dl.dataset
-
-    @property
-    def valid_ds(self): return self.valid_dl.dataset
 
 def get_data(train_dl, valid_dl):
-    data = DataBunch(train_dl, valid_dl)
+    data = {"train_data":train_dl,"valid_data": valid_dl}
     return data
 
 
@@ -154,13 +140,16 @@ class AverageMetrics():
         self.total_loss, self.count = 0., 0
         self.tot_mets = [0.]*len(self.metrics)
     @property
-    def all_stats(self): return [self.total_loss.item()] + self.tot_mets
+    def all_stats(self):
+        return [self.total_loss.item()] + self.tot_mets
     @property
-    def avg_stats(self): return [o/self.count for o in self.all_stats]
+    def avg_stats(self):
+        return [o/self.count for o in self.all_stats]
 
     def __repr__(self):
         if not self.count: return ''
         return f"{'train' if self.in_train else 'valid'}: {self.avg_stats}"
+        
     def accumulate(self, run):
         bn = run.xb.shape[0]
         self.total_loss+=run.loss*bn

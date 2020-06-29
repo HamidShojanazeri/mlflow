@@ -1,40 +1,23 @@
 from __future__ import print_function
-
+import os
+import random
 import torch
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-import gc
-import re
-tqdm.pandas()
 from fastprogress.fastprogress import master_bar, progress_bar
-from pathlib import Path
 import argparse
-
-
 import mlflow
 import mlflow.pytorch
 from mlflow.pytorch.callbacks import *
-
-import os
-import random
 import tempfile
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from torch.autograd import Variable
-# from tensorboardX import SummaryWriter
-from collections import namedtuple
-import tensorflow as tf
-import tensorflow.summary
-from tensorflow.summary import scalar
-from tensorflow.summary import histogram
-from chardet.universaldetector import UniversalDetector
-import matplotlib.pyplot as plt
-from functools import partial
+from tensorboardX import SummaryWriter
+
+
 
 
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
@@ -65,7 +48,6 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-# with timer('load data'):
 
 
 train_loader = torch.utils.data.DataLoader(
@@ -108,9 +90,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 loss_fn = F.nll_loss
 
-gc.collect()
-torch.cuda.empty_cache()
 learn = get_learner(model,optimizer, loss_fn,train_loader, test_loader)
-gc.collect()
 run = autolog()
 run.fit(2, learn)

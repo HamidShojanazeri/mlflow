@@ -34,6 +34,7 @@ from mlflow.utils.autologging_utils import try_mlflow_log, log_fn_args_as_params
 from fastai.tabular import TabularList
 from fastai.basic_data import DatasetType
 
+
 FLAVOR_NAME = "fastai"
 
 
@@ -256,7 +257,7 @@ def autolog():
     Logs loss and any other metrics specified in the fit
     function, and optimizer data as parameters. Model checkpoints
     are logged as artifacts to a 'models' directory.
-    
+
     MLflow will also log the parameters of the EarlyStopping and OneCycleScheduler callbacks
     """
     from fastai.basic_train import LearnerCallback, Learner

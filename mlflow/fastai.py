@@ -14,13 +14,12 @@ fastai (native) format
 """
 import os
 import yaml
+import gorilla
+import tempfile
+import shutil
 import pandas as pd
 import numpy as np
-import tempfile
-import importlib
-import shutil
 
-import pandas as pd
 from mlflow import pyfunc
 from mlflow.models import Model, ModelSignature, ModelInputExample
 import mlflow.tracking
@@ -30,11 +29,10 @@ from mlflow.tracking.artifact_utils import _download_artifact_from_uri
 from mlflow.utils.environment import _mlflow_conda_env
 from mlflow.utils.model_utils import _get_flavor_configuration
 from mlflow.utils.annotations import experimental
+from mlflow.utils.autologging_utils import try_mlflow_log, log_fn_args_as_params
 
 from fastai.tabular import TabularList
 from fastai.basic_data import DatasetType
-import gorilla
-from mlflow.utils.autologging_utils import try_mlflow_log, log_fn_args_as_params
 
 FLAVOR_NAME = "fastai"
 

@@ -29,6 +29,7 @@ setup(
     package_data={"mlflow": js_files + models_container_server_files + alembic_files},
     install_requires=[
         'alembic',
+        'azure-storage-blob>=12.0',
         'click>=7.0',
         'cloudpickle',
         'databricks-cli>=0.8.7',
@@ -64,6 +65,9 @@ setup(
         ],
          'sqlserver': [
             "mlflow-dbstore",
+        ],
+         'aliyun-oss': [
+            "aliyunstoreplugin",
         ],
     },
     entry_points='''

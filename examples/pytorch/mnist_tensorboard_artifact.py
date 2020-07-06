@@ -11,6 +11,7 @@
 import argparse
 import os
 import mlflow
+import mlflow.pytorch
 import tempfile
 import torch
 import torch.nn as nn
@@ -18,6 +19,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+# from torch.utils.tensorboard import SummaryWriter
 from tensorboardX import SummaryWriter
 
 # Command-line arguments
@@ -26,7 +28,7 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                     help='input batch size for testing (default: 1000)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
+parser.add_argument('--epochs', type=int, default=2, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                     help='learning rate (default: 0.01)')
@@ -80,16 +82,16 @@ class Net(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=0)
+    # def log_weights(self,step):
+    #     writer.add_histogram('weights/conv1/weight', model.conv1.weight.data, step)
+    #     writer.add_histogram('weights/conv1/bias', model.conv1.bias.data, step)
+    #     writer.add_histogram('weights/conv2/weight', model.conv2.weight.data, step)
+    #     writer.add_histogram('weights/conv2/bias', model.conv2.bias.data, step)
+    #     writer.add_histogram('weights/fc1/weight', model.fc1.weight.data, step)
+    #     writer.add_histogram('weights/fc1/bias', model.fc1.bias.data, step)
+    #     writer.add_histogram('weights/fc2/weight', model.fc2.weight.data, step)
+    #     writer.add_histogram('weights/fc2/bias', model.fc2.bias.data, step)
 
-    def log_weights(self, step):
-        writer.add_histogram('weights/conv1/weight', model.conv1.weight.data, step)
-        writer.add_histogram('weights/conv1/bias', model.conv1.bias.data, step)
-        writer.add_histogram('weights/conv2/weight', model.conv2.weight.data, step)
-        writer.add_histogram('weights/conv2/bias', model.conv2.bias.data, step)
-        writer.add_histogram('weights/fc1/weight', model.fc1.weight.data, step)
-        writer.add_histogram('weights/fc1/bias', model.fc1.bias.data, step)
-        writer.add_histogram('weights/fc2/weight', model.fc2.weight.data, step)
-        writer.add_histogram('weights/fc2/bias', model.fc2.bias.data, step)
 
 model = Net()
 if args.cuda:
@@ -98,6 +100,15 @@ if args.cuda:
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
 writer = None # Will be used to write TensorBoard events
+def log_weights(step):
+    writer.add_histogram('weights/conv1/weight', model.conv1.weight.data, step)
+    writer.add_histogram('weights/conv1/bias', model.conv1.bias.data, step)
+    writer.add_histogram('weights/conv2/weight', model.conv2.weight.data, step)
+    writer.add_histogram('weights/conv2/bias', model.conv2.bias.data, step)
+    writer.add_histogram('weights/fc1/weight', model.fc1.weight.data, step)
+    writer.add_histogram('weights/fc1/bias', model.fc1.bias.data, step)
+    writer.add_histogram('weights/fc2/weight', model.fc2.weight.data, step)
+    writer.add_histogram('weights/fc2/bias', model.fc2.bias.data, step)
 
 def train(epoch):
     model.train()
@@ -116,7 +127,7 @@ def train(epoch):
                 100. * batch_idx / len(train_loader), loss.data.item()))
             step = epoch * len(train_loader) + batch_idx
             log_scalar('train_loss', loss.data.item(), step)
-            model.log_weights(step)
+            log_weights(step)
 
 def test(epoch):
     model.eval()
@@ -159,6 +170,7 @@ with mlflow.start_run():
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         test(epoch)
+    mlflow.pytorch.log_model(model, "models")
 
     # Upload the TensorBoard event logs as a run artifact
     print("Uploading TensorBoard events as a run artifact...")
